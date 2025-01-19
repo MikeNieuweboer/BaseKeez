@@ -2,6 +2,7 @@ import { createSignal, createResource, onMount } from "solid-js";
 import { getCurrentWindow, availableMonitors, currentMonitor, LogicalPosition } from "@tauri-apps/api/window"
 import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event"
 import "./App.css";
 
 let [fullscreen, setFullscreen] = createSignal(false);
@@ -10,12 +11,11 @@ const AutoSwitch = async () => {
   let monitors = await availableMonitors();
   let window = await getCurrentWindow();
   let mainMonitor = await currentMonitor();
-  console.log(mainMonitor);
-  console.log(await window.innerPosition());
   if (mainMonitor == null) return;
   monitors.forEach((monitor) => {
     if (monitor.name != mainMonitor.name) {
-      window.setPosition(new LogicalPosition(100, 100));
+      window.setPosition(monitor.position);
+      ChangeFullscreen();
       return;
     }
   })
@@ -27,8 +27,14 @@ const ChangeFullscreen = async () => {
   window.setFullscreen(fullscreen());
 }
 
+const UpdateScore = () => {
+
+}
+
 function App() {
   onMount(AutoSwitch);
+
+  listen("scoreChanged", )
 
   return (
     <main class="container">

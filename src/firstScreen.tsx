@@ -1,53 +1,66 @@
-import { createSignal } from "solid-js";
+import { createSignal, Match } from "solid-js";
+import { Switch } from "solid-js";
 import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { exists, readTextFile, writeTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { HeaderComponent } from "./header";
 import "./App.css";
 
+let [fileName, setFileName] = createSignal("");
+let [gameLoaded, setGameLoaded] = createSignal(false);
+let [gameIndex, setGameIndex] = createSignal(1);
+
+
+const NewGame = () => {
+  console.log(Date.toString());
+}
+
+// const NewRound = () => {
+
+// }
+
+// const ChangeScore = (gameIndex, teamName) => {
+  
+//   invoke("update_score", {});
+// }
+
+// const ChangeTeamName = (oldName, newName) => {
+
+// }
+
+// const AddTeam = () => {
+
+// }
+
+// const SaveScore = async (dataUrl) => {
+  
+// };
+
+// const ReadScore = () => {
+
+// }
+
+function LoadScreen() {
+  return <button> hewwo!</button>
+}
+
+function GameScreen() {
+  return <div>hello!</div>
+}
+
 function App() {
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name: name() }));
-  }
-  const switch_screen = async () => {
-    await invoke("move_window");
-  };
-
+  NewGame();
   return (
     <main class="container">
-      <h1>Welcome to Tauri + Solid</h1>
-
-      <div class="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={logo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and Solid logos to learn more.</p>
-
-      <form
-        class="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <button onClick={switch_screen}></button>
-      <p>{greetMsg()}</p>
+      {HeaderComponent(gameIndex())}
+      <Switch>
+        <Match when={!gameLoaded()}>
+          <LoadScreen />
+        </Match>
+        <Match when={gameLoaded()}>
+          <GameScreen />
+        </Match>
+      </Switch>
     </main>
   );
 }
