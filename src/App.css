@@ -17,20 +17,68 @@ body {
   font: url();
 }
 
-.logo {
-  object-fit: contain;
+.container {
+  width: 100vw;
+  height: 100vh;
+}
+
+.logo, .background-logo {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.header-parent {
+  display: grid;
+  grid-template-columns: 2vw .5vw auto .5vw 2vw;
 }
 
 .header {
-  width: 100vw;
   display: flex;
   flex-direction: row;
-  flex: 1 1 1;
-  align-items: center;
   justify-content: center;
   background-color: var(--red);
   color: var(--yellow);
-  margin: 0;
   height: 20vh;
-  font-size: 10vh;
+  font-size: min(10vh, 10vw);
+  flex-grow: 1;
+}
+
+.header > div, .background-logo-container {
+  max-height: 100%;
+  max-width: 100%;
+  align-content: center;
+  flex: 1 1 0px;
+  text-align: center;
+}
+
+.background-logo {
+  opacity: .4;
+}
+
+.header-parent > .side-line {
+  background-color: var(--yellow);
+}
+
+.header-parent > .side-bar {
+  background-color: var(--red);
+}
+
+.background {
+  display: grid;
+  z-index: -1;
+  grid-template-columns: 2vw .5vw auto .5vw 2vw;
+  grid-template-rows: calc(80vh - 2vw) .5vw auto;
+  position: absolute;
+}
+
+.background > .side-line {
+  background-color: var(--red);
+}
+
+.background > .side-bar {
+  background-color: var(--yellow);
+}
+
+.foreground-container {
+  margin: 0px 2.5vw;
 }
