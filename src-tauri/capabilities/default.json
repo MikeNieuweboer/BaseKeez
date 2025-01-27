@@ -12,6 +12,8 @@
     "core:window:allow-current-monitor",
     "core:window:allow-outer-position",
     "core:window:allow-inner-position",
-    "core:webview:allow-set-webview-position"
+    "core:webview:allow-set-webview-position",
+    "fs:allow-app-write",
+    "fs:allow-app-read"
   ]
 }

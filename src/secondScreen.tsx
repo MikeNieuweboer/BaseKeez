@@ -1,59 +1,112 @@
-import { createSignal, createResource, onMount } from "solid-js";
-import { getCurrentWindow, availableMonitors, currentMonitor, LogicalPosition } from "@tauri-apps/api/window"
+import { Accessor, createEffect, createSignal } from "solid-js";
+import { createStore } from "solid-js/store";
+import { For } from "solid-js";
 import logo from "./assets/logo.svg";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event"
+import { listen } from "@tauri-apps/api/event";
+import { exists, readTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { HeaderComponent } from "./header";
+import { BackgroundComponent } from "./background";
 import "./App.css";
 
-let [fullscreen, setFullscreen] = createSignal(false);
-
-const AutoSwitch = async () => {
-  let monitors = await availableMonitors();
-  let window = await getCurrentWindow();
-  let mainMonitor = await currentMonitor();
-  if (mainMonitor == null) return;
-  monitors.forEach((monitor) => {
-    if (monitor.name != mainMonitor.name) {
-      window.setPosition(monitor.position);
-      ChangeFullscreen();
-      return;
-    }
-  })
+interface RoundScore {
+  winChange: number,
+  minChange: number
 }
 
-const ChangeFullscreen = async () => {
-  let window = await getCurrentWindow();
-  setFullscreen(!fullscreen());
-  window.setFullscreen(fullscreen());
+interface Team {
+  name: string,
+  teamScores: RoundScore[]
+};
+
+interface GameData {
+  teams: Team[],
+  currentGame: number,
+  shownGame: number,
+  totalRounds: number
+};
+
+const fileName = "basekeez-scores";
+let [gameLoaded, setGameLoaded] = createSignal(false);
+let [gameIndex, setGameIndex] = createSignal(1);
+let [currentGameData, setCurrentGameData] = createStore<GameData>({
+  teams: [],
+  currentGame: 0,
+  shownGame: 0,
+  totalRounds: 1
+});
+
+const ReadScore = async () => {
+  if (!exists(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData })) return;
+  let data = await readTextFile(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData });
+  console.log(data)
+  setCurrentGameData(JSON.parse(data));
+  setGameLoaded(true);
 }
 
-const UpdateScore = () => {
+const TeamTotalWin = (team: Team) => {
+  return team.teamScores.slice(0, currentGameData.shownGame + 1).reduce((total, score) => total + score.winChange, 0);
+}
 
+const TeamTotalMin = (team: Team) => {
+  return team.teamScores.slice(0, currentGameData.shownGame + 1).reduce((total, score) => total + score.minChange, 0);
+}
+
+function TeamStats(teamIndex: Accessor<number>) {
+  let team = currentGameData.teams[teamIndex()];
+  let [totalWin, setTotalWin] = createSignal(TeamTotalWin(team))
+  let [totalMin, setTotalMin] = createSignal(TeamTotalMin(team))
+  let [totalScore, setTotalScore] = createSignal(totalWin() - totalMin())
+
+  const UpdateTeamData = () => {
+    team = currentGameData.teams[teamIndex()];
+    setTotalWin(TeamTotalWin(team));
+    setTotalMin(TeamTotalMin(team));
+    setTotalScore(totalWin() - totalMin());
+  }
+
+  createEffect(UpdateTeamData)
+  return (
+    <tr>
+      <td>{team.name}</td>
+      <td>{totalWin()}</td>
+      <td>{totalMin()}</td>
+      <td>{totalScore()}</td>
+    </tr>
+  )
+}
+
+function GameScreen() {
+  return (
+    <div>
+      <table class="score-table">
+        <tbody>
+          <tr>
+            <th>Team</th>
+            <th>Winpunten</th>
+            <th>Minpunten</th>
+            <th>Totaal</th>
+            <th></th>
+          </tr>
+          <For each={currentGameData.teams}>{(_, i) =>
+            TeamStats(i)
+          }</For>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function App() {
-  onMount(AutoSwitch);
-
-  listen("scoreChanged", )
-
+  listen<string>("scoreChanged", () => {
+    ReadScore();
+  })
   return (
     <main class="container">
-      <h1>Welcome to Tauri + Solid</h1>
-
-      <div class="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={logo} class="logo solid" alt="Solid logo" />
-        </a>
+      {HeaderComponent(currentGameData.shownGame + 1)}
+      <BackgroundComponent />
+      <div class="foreground-container">
+        <GameScreen />
       </div>
-      <button onClick={AutoSwitch}>{fullscreen() ? "True" : "False"}</button>
-      <p>Click on the Tauri, Vite, and Solid logos to learn more.</p>
-
     </main>
   );
 }
