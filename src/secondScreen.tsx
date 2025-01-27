@@ -8,6 +8,28 @@ import { HeaderComponent } from "./header";
 import { BackgroundComponent } from "./background";
 import "./App.css";
 
+// import { createSignal, createResource, onMount } from "solid-js";
+// import { getCurrentWindow, availableMonitors, currentMonitor, LogicalPosition } from "@tauri-apps/api/window"
+// import logo from "./assets/logo.svg";
+// import { invoke } from "@tauri-apps/api/core";
+// import { listen } from "@tauri-apps/api/event"
+// import "./App.css";
+
+// let [fullscreen, setFullscreen] = createSignal(false);
+
+// const AutoSwitch = async () => {
+//   let monitors = await availableMonitors();
+//   let window = await getCurrentWindow();
+//   let mainMonitor = await currentMonitor();
+//   if (mainMonitor == null) return;
+//   monitors.forEach((monitor) => {
+//     if (monitor.name != mainMonitor.name) {
+//       window.setPosition(monitor.position);
+//       ChangeFullscreen();
+//       return;
+//     }
+//   })
+
 interface RoundScore {
   winChange: number,
   minChange: number
