@@ -64,6 +64,19 @@ body {
   background-color: var(--red);
 }
 
+.fullscreen-button {
+  position: absolute;
+  top: 0;
+  /* left: 0; */
+  background-color: var(--red);
+  color: var(--yellow);
+  font-size: 2vh;
+  border: none;
+  border-radius: 5px;
+  margin: .5vh 2.5vw;
+  height: 2rem;
+}
+
 .background {
   display: grid;
   z-index: -1;

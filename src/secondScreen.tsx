@@ -1,14 +1,12 @@
 import { Accessor, createEffect, createSignal, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
-import { For } from "solid-js";
-import logo from "./assets/logo.svg";
+import { For, Show } from "solid-js";
 import { listen } from "@tauri-apps/api/event";
 import { exists, readTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow, availableMonitors, currentMonitor } from "@tauri-apps/api/window"
 import { HeaderComponent } from "./header";
 import { BackgroundComponent } from "./background";
 import "./App.css";
-
 
 let [fullscreen, setFullscreen] = createSignal(false);
 
@@ -134,6 +132,14 @@ function GameScreen() {
   );
 }
 
+function FullScreenButton() {
+  return (
+    <Show when={fullscreen()} fallback={<img class="fullscreen-button" src="icons8-fit-to-width-50.png" onclick={ChangeFullscreen}></img>}>
+      <img class="fullscreen-button" src="icons8-fullscreen-50.png" onclick={ChangeFullscreen}></img>
+    </Show>
+  );
+}
+
 function ScoreBoard() {
   listen<string>("scoreChanged", () => {
     ReadScore();
@@ -144,6 +150,7 @@ function ScoreBoard() {
   return (
     <main class="container">
       {HeaderComponent(currentGameData.shownGame + 1)}
+      <FullScreenButton />
       <BackgroundComponent />
       <GameScreen />
     </main>

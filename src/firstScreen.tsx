@@ -1,7 +1,6 @@
-import { Accessor, createEffect, createSignal, onMount } from "solid-js";
+import { Accessor, createEffect, createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Switch, Match, For, Show } from "solid-js";
-import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { exists, readTextFile, writeTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 import { HeaderComponent } from "./header";
@@ -137,6 +136,9 @@ function TeamStats(teamIndex: Accessor<number>) {
       <td>
         <div class="table-input">
           Totaal: {totalWin()}, Ronde: <input class="number-input" value={teamScore().winChange} min={0} type="number" onChange={(e) => {
+            if (e.currentTarget.value == "") {
+              e.currentTarget.value = "0";
+            }
             setCurrentGameData("teams", teamIndex(), "teamScores", currentGameData.currentGame, "winChange", e.currentTarget.valueAsNumber);
             SaveScore();
             UpdateScoreBoard();
@@ -146,6 +148,9 @@ function TeamStats(teamIndex: Accessor<number>) {
       <td>
         <div class="table-input">
         Totaal: {totalMin()}, Ronde: <input class="number-input" value={teamScore().minChange} min={0} type="number" onChange={(e) => {
+          if (e.currentTarget.value == "") {
+            e.currentTarget.value = "0";
+          }
           setCurrentGameData("teams", teamIndex(), "teamScores", currentGameData.currentGame, "minChange", e.currentTarget.valueAsNumber);
           SaveScore();
           UpdateScoreBoard();
