@@ -22,7 +22,7 @@
       {
         "title": "scoreBoard",
         "label": "child",
-        "url": "scoreboard_index.html"
+        "url": "index.html"
       }
     ],
     "security": {

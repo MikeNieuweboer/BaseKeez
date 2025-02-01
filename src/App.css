@@ -2,6 +2,7 @@
   --red: #9d191f;
   --dark-red: #801712;
   --yellow: #fee1b1;
+  --table-text-size: 10vh;
 }
 
 @font-face {
@@ -52,7 +53,7 @@ body {
 }
 
 .background-logo {
-  opacity: .25;
+  opacity: .18;
 }
 
 .header-parent > .side-line {
@@ -66,7 +67,7 @@ body {
 .background {
   display: grid;
   z-index: -1;
-  grid-template-columns: 2vw .5vw auto .5vw 2vw;
+  grid-template-columns: 2vw .5vw 95vw .5vw 2vw;
   grid-template-rows: calc(80vh - 2vw) .5vw auto;
   position: absolute;
 }
@@ -81,4 +82,138 @@ body {
 
 .foreground-container {
   margin: 0px 2.5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: serif;
+  font-weight: 600;
+}
+
+.load-screen-container {
+  display: block;
+  padding: 3.5vh 0px 0px;
+}
+
+.load-screen-button {
+  display: block;
+  height: 33.5vh;
+  margin-bottom: 3.5vh;
+  width: 80vw;
+  background-color: var(--red);
+  color: var(--yellow);
+  font-size: 9vh;
+  border-radius: 5px;
+}
+
+.load-screen-button:active {
+  background-color: var(--dark-red);
+  border-style: inset;
+}
+
+.score-board-container {
+  margin: 0px 2.5vw;
+  display: grid;
+  grid-template-columns: 70% auto;
+  font-family: serif;
+  font-weight: 600;
+}
+
+.score-count-table {
+  width: 90%;
+  margin: 5% 5% 0px 5%;
+  font-size: max(var(--table-text-size), 1rem);
+}
+
+.score-board-table {
+  width: 90%;
+  margin: 5% 5% 0px 5%;
+  font-size: max(var(--table-text-size), 1rem);
+}
+
+.table-entry > td {
+  overflow-wrap: anywhere;
+}
+
+.rules {
+  margin: 3.325vw 3.325vw 0px 0px;
+  padding: 5px;
+  border: 3px solid var(--red);
+  height: fit-content;
+  font-size: max(2.5vh, 1rem);
+}
+
+table, th {
+  border: 3px solid var(--red);
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.table-entry > td {
+  border: 1px solid var(--red);
+  padding: 0px 5px;
+}
+
+.table-input {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+th {
+  font-size: max(3vh, 2rem);
+}
+
+.table-input > input {
+  width: 1.5em;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .2);
+  border-radius: 5px;
+  border: 1px dashed var(--dark-red);
+  font-size: 1em;
+}
+
+.team-name-input {
+  width: 25vw;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .2);
+  border-radius: 5px;
+  border: 1px dashed var(--dark-red);
+  font-size: max(0.7em, 1rem);
+}
+
+.team-name-submit {
+  height:100%;
+  background-color: var(--red);
+  color: var(--yellow);
+  border-radius: 5px;
+  margin-left: 1em;
+}
+
+.team-name-submit:disabled {
+  background-color: var(--dark-red);
+  color: var(--red);
+  border-style: inset;
+}
+
+.team-name-submit:active {
+  border-style: inset;
+  background-color: var(--dark-red);
+}
+
+.remove-team {
+  height: max(3.5vh, 1em);
+  justify-self: center;
+}
+
+.round-choose-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  font-size: max(3vh, 1rem);
 }

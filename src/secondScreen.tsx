@@ -1,34 +1,36 @@
-import { Accessor, createEffect, createSignal } from "solid-js";
+import { Accessor, createEffect, createSignal, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { For } from "solid-js";
 import logo from "./assets/logo.svg";
 import { listen } from "@tauri-apps/api/event";
 import { exists, readTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { getCurrentWindow, availableMonitors, currentMonitor } from "@tauri-apps/api/window"
 import { HeaderComponent } from "./header";
 import { BackgroundComponent } from "./background";
 import "./App.css";
 
-// import { createSignal, createResource, onMount } from "solid-js";
-// import { getCurrentWindow, availableMonitors, currentMonitor, LogicalPosition } from "@tauri-apps/api/window"
-// import logo from "./assets/logo.svg";
-// import { invoke } from "@tauri-apps/api/core";
-// import { listen } from "@tauri-apps/api/event"
-// import "./App.css";
 
-// let [fullscreen, setFullscreen] = createSignal(false);
+let [fullscreen, setFullscreen] = createSignal(false);
 
-// const AutoSwitch = async () => {
-//   let monitors = await availableMonitors();
-//   let window = await getCurrentWindow();
-//   let mainMonitor = await currentMonitor();
-//   if (mainMonitor == null) return;
-//   monitors.forEach((monitor) => {
-//     if (monitor.name != mainMonitor.name) {
-//       window.setPosition(monitor.position);
-//       ChangeFullscreen();
-//       return;
-//     }
-//   })
+const AutoSwitch = async () => {
+  let monitors = await availableMonitors();
+  let window = await getCurrentWindow();
+  let mainMonitor = await currentMonitor();
+  if (mainMonitor == null) return;
+  monitors.forEach((monitor) => {
+    if (monitor.name != mainMonitor.name) {
+      window.setPosition(monitor.position);
+      ChangeFullscreen();
+      return;
+    }
+  })
+}
+
+const ChangeFullscreen = async () => {
+  let window = await getCurrentWindow();
+  setFullscreen(!fullscreen());
+  window.setFullscreen(fullscreen());
+}
 
 interface RoundScore {
   winChange: number,
@@ -48,8 +50,6 @@ interface GameData {
 };
 
 const fileName = "basekeez-scores";
-let [gameLoaded, setGameLoaded] = createSignal(false);
-let [gameIndex, setGameIndex] = createSignal(1);
 let [currentGameData, setCurrentGameData] = createStore<GameData>({
   teams: [],
   currentGame: 0,
@@ -60,9 +60,10 @@ let [currentGameData, setCurrentGameData] = createStore<GameData>({
 const ReadScore = async () => {
   if (!exists(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData })) return;
   let data = await readTextFile(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData });
-  console.log(data)
-  setCurrentGameData(JSON.parse(data));
-  setGameLoaded(true);
+  let gameData: GameData = JSON.parse(data);
+  setCurrentGameData("shownGame", gameData.shownGame);
+  gameData.teams = gameData.teams.sort((a, b) => TeamTotalWin(b) - TeamTotalMin(b) - TeamTotalWin(a) + TeamTotalMin(a))
+  setCurrentGameData(gameData);
 }
 
 const TeamTotalWin = (team: Team) => {
@@ -88,7 +89,7 @@ function TeamStats(teamIndex: Accessor<number>) {
 
   createEffect(UpdateTeamData)
   return (
-    <tr>
+    <tr class="table-entry">
       <td>{team.name}</td>
       <td>{totalWin()}</td>
       <td>{totalMin()}</td>
@@ -98,39 +99,55 @@ function TeamStats(teamIndex: Accessor<number>) {
 }
 
 function GameScreen() {
+
+  createEffect(() => {
+    let nothingness = currentGameData.teams.length;
+    // Gotta love solid-js
+    nothingness = nothingness;
+    document.documentElement.style.setProperty("--table-text-size", (7 - 0.4 * currentGameData.teams.length).toString() + "vh");
+  })
+
   return (
-    <div>
-      <table class="score-table">
+    <div class="score-board-container">
+      <table class="score-board-table">
         <tbody>
           <tr>
             <th>Team</th>
             <th>Winpunten</th>
             <th>Minpunten</th>
             <th>Totaal</th>
-            <th></th>
           </tr>
           <For each={currentGameData.teams}>{(_, i) =>
             TeamStats(i)
           }</For>
         </tbody>
       </table>
+      <div class="rules">
+        Aas, nieuwe pion opzetten of 1 stap vooruit <br /> <br />
+        Heer, nieuwe pion opzetten <br /> <br />
+        Vrouw, 12 stappen vooruit <br /> <br />
+        Boer, wisselen met pion andere speler <br /> <br />
+        7, stappen vooruit of splitsen over twee pionnen <br /> <br />
+        4, stappen achteruit
+      </div>
     </div>
   );
 }
 
-function App() {
+function ScoreBoard() {
   listen<string>("scoreChanged", () => {
     ReadScore();
   })
+
+  onMount(AutoSwitch);
+
   return (
     <main class="container">
       {HeaderComponent(currentGameData.shownGame + 1)}
       <BackgroundComponent />
-      <div class="foreground-container">
-        <GameScreen />
-      </div>
+      <GameScreen />
     </main>
   );
 }
 
-export default App;
+export default ScoreBoard;

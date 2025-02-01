@@ -1,6 +1,6 @@
 import { Accessor, createEffect, createSignal, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
-import { Switch, Match, For } from "solid-js";
+import { Switch, Match, For, Show } from "solid-js";
 import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { exists, readTextFile, writeTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
@@ -84,13 +84,13 @@ const SaveScore = async () => {
   try {
     const jsonData = JSON.stringify(currentGameData);
     await writeTextFile(`${fileName}.json`, jsonData, { baseDir: BaseDirectory.AppLocalData });
-    console.log(jsonData);
   } catch (error) {
     console.error(error);
   }
 };
 
 const ReadScore = async () => {
+  if (!exists(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData })) return;
   let data = await readTextFile(`${fileName}.json`, { baseDir: BaseDirectory.AppLocalData });
   setCurrentGameData(JSON.parse(data));
   setGameLoaded(true);
@@ -106,9 +106,11 @@ const TeamTotalMin = (team: Team) => {
 
 function LoadScreen() {
   return (
-    <div>
-      <button onclick={ReadScore}> Laad vorig spel </button>
-      <button onclick={NewGame}> Start nieuw spel </button>
+    <div class="foreground-container">
+      <div class="load-screen-container">
+        <button class="load-screen-button" onclick={ReadScore}> Laad vorig spel </button>
+        <button class="load-screen-button" onclick={NewGame}> Start nieuw spel </button>
+      </div>
     </div>
   )
 }
@@ -128,24 +130,34 @@ function TeamStats(teamIndex: Accessor<number>) {
     setTotalScore(totalWin() - totalMin());
   }
 
-  createEffect(UpdateTeamData)
+  createEffect(UpdateTeamData);
   return (
-    <tr>
+    <tr class="table-entry">
       <td>{team.name}</td>
-      <td>Totaal: {totalWin()}, Ronde: <input class="number-input" value={teamScore().winChange} min={0} type="number" onChange={(e) => {
-          setCurrentGameData("teams", teamIndex(), "teamScores", currentGameData.currentGame, "winChange", e.currentTarget.valueAsNumber);
-          SaveScore();
-          UpdateScoreBoard();
-        }}></input></td>
-      <td>Totaal: {totalMin()}, Ronde: <input class="number-input" value={teamScore().minChange} min={0} type="number" onChange={(e) => {
+      <td>
+        <div class="table-input">
+          Totaal: {totalWin()}, Ronde: <input class="number-input" value={teamScore().winChange} min={0} type="number" onChange={(e) => {
+            setCurrentGameData("teams", teamIndex(), "teamScores", currentGameData.currentGame, "winChange", e.currentTarget.valueAsNumber);
+            SaveScore();
+            UpdateScoreBoard();
+          }}></input>
+        </div>
+      </td>
+      <td>
+        <div class="table-input">
+        Totaal: {totalMin()}, Ronde: <input class="number-input" value={teamScore().minChange} min={0} type="number" onChange={(e) => {
           setCurrentGameData("teams", teamIndex(), "teamScores", currentGameData.currentGame, "minChange", e.currentTarget.valueAsNumber);
           SaveScore();
           UpdateScoreBoard();
-        }}></input></td>
+        }}></input>
+        </div>
+      </td>
       <td>{totalScore()}</td>
       <td>
         <i>
-          <img class="remove-team" onclick={() => RemoveTeam(team.name)} src="icons8-x-50.png" />
+          <img class="remove-team image-button" onclick={() => {
+              RemoveTeam(team.name); SaveScore(); UpdateScoreBoard();
+            }} src="icons8-x-50.png" />
         </i>
       </td>
     </tr>
@@ -158,7 +170,7 @@ function GameScreen() {
   const InvalidTeamName = () => {
     return newTeamName().length <= 0 || currentGameData.teams.find((team) => team.name == newTeamName()) != undefined;
   }
-
+  UpdateScoreBoard();
   const UpdateShownGame = () => {
     let shownIndex = currentGameData.currentGame;
     if (showPrevRound()) {
@@ -167,9 +179,26 @@ function GameScreen() {
     ChangeShownGameIndex(shownIndex);
   };
 
+  const NextGame = () => {
+    let nextIndex = currentGameData.currentGame + 1;
+    if (nextIndex >= currentGameData.totalRounds) {
+      NewRound();
+    }
+    ChangeCurrentGameIndex(nextIndex);
+    UpdateShownGame();
+    UpdateScoreBoard();
+  } 
+
+  createEffect(() => {
+    let nothingness = currentGameData.teams.length;
+    // Gotta love solid-js
+    nothingness = nothingness;
+    document.documentElement.style.setProperty("--table-text-size", (6 - 0.4 * currentGameData.teams.length).toString() + "vh");
+  })
+
   return (
-    <div>
-      <table class="score-table">
+    <div class="foreground-container">
+      <table class="score-count-table">
         <tbody>
           <tr>
             <th>Team</th>
@@ -182,18 +211,16 @@ function GameScreen() {
             TeamStats(i)
           }</For>
           <tr>
-            <td>
-              <input type="text" value={newTeamName()} onInput={(e) => setNewTeamName(e.currentTarget.value)}></input>
-            </td>
-            <td colSpan={3}>
-              <button onClick={() => {AddTeam(newTeamName()); setNewTeamName(""); UpdateScoreBoard();}} 
+            <td colspan={2}>
+              <input class="team-name-input" type="text" placeholder="Teamnaam" value={newTeamName()} onInput={(e) => setNewTeamName(e.currentTarget.value)}></input>
+              <button class="team-name-submit" onClick={() => {AddTeam(newTeamName()); setNewTeamName(""); UpdateScoreBoard();}} 
               disabled={InvalidTeamName()}>Voeg nieuw team toe</button>
             </td>
           </tr>
         </tbody>
       </table>
       <div class="options">
-        <div>
+        <div class="round-choose-options">
           Laat vorige ronde zien
           <input type="checkbox" checked={showPrevRound()} onChange={(e) => {
               setShowPrevRound(e.currentTarget.checked);
@@ -203,7 +230,7 @@ function GameScreen() {
           }></input>
         </div>
         <div>
-          <img src="icons8-chevron-left-50.png" onclick={
+          <img class="image-button" src="icons8-left-50.png" onclick={
             () => {
               let prevIndex = currentGameData.currentGame - 1;
               if (prevIndex >= 0) {
@@ -213,17 +240,9 @@ function GameScreen() {
               } 
             }
           }/>
-          <img src="icons8-chevron-right-50.png" onclick={
-            () => {
-              let nextIndex = currentGameData.currentGame + 1;
-              if (nextIndex >= currentGameData.totalRounds) {
-                NewRound();
-              }
-              ChangeCurrentGameIndex(nextIndex);
-              UpdateShownGame();
-              UpdateScoreBoard();
-            }
-          }/>
+          <Show when={currentGameData.currentGame < currentGameData.totalRounds - 1} fallback={<img class="image-button" src="icons8-plus-50.png" onclick={NextGame}/>}>
+            <img class="image-button" src="icons8-right-50.png" onclick={NextGame}/>
+          </Show>
         </div>
       </div>
     </div>
@@ -235,7 +254,6 @@ function App() {
     <main class="container">
       {HeaderComponent(currentGameData.currentGame + 1)}
       <BackgroundComponent />
-      <div class="foreground-container">
         <Switch>
           <Match when={!gameLoaded()}>
             <LoadScreen />
@@ -244,7 +262,6 @@ function App() {
             <GameScreen />
           </Match>
         </Switch>
-      </div>
     </main>
   );
 }
