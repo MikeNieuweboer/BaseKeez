@@ -178,20 +178,36 @@ th {
 }
 
 .table-input > input {
-  width: 1.5em;
+  width: 1.75em;
   height: 100%;
+  font-size: 1em;
+}
+
+input {
+  background-color: rgba(0, 0, 0, .1);
+  border-radius: 5px;
+  border: 1px solid transparent;
+}
+
+input:hover {
   background-color: rgba(0, 0, 0, .2);
   border-radius: 5px;
   border: 1px dashed var(--dark-red);
-  font-size: 1em;
+}
+
+input[type="number"]:not(:hover) {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]:not(:hover)::-webkit-inner-spin-button,
+input[type="number"]:not(:hover)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .team-name-input {
   width: 25vw;
   height: 100%;
-  background-color: rgba(0, 0, 0, .2);
-  border-radius: 5px;
-  border: 1px dashed var(--dark-red);
   font-size: max(0.7em, 1rem);
 }
 

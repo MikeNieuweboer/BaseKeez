@@ -37,7 +37,7 @@ const NewGame = () => {
   setCurrentGameData({
     teams: [],
     currentGame: 0,
-    shownGame: 0,
+    shownGame: -1,
     totalRounds: 1
   });
   setGameLoaded(true);
