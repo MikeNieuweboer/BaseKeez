@@ -7,7 +7,8 @@
 
 @font-face {
   font-family: "main-font";
-  src: url("assets/Fonts/ActionCondensedRegular-Grade2-Trial.otf") format("opentype");
+  /* src: url("assets/Fonts/ActionCondensedRegular-Grade2-Trial.otf") format("opentype"); */
+  src: url("assets/Fonts/sing_14l.ttf") format("truetype");
 }
 
 body {
@@ -26,6 +27,13 @@ body {
 .logo, .background-logo {
   max-height: 100%;
   max-width: 100%;
+}
+
+.logo-lion {
+  position: absolute;
+  right: 2vw;
+  bottom: -1.5vw;
+  width: 15vw;
 }
 
 .header-parent {
@@ -98,8 +106,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: serif;
-  font-weight: 600;
+  /* font-family: main; */
+  font-weight: 100;
 }
 
 .load-screen-container {
@@ -127,8 +135,8 @@ body {
   margin: 0px 2.5vw;
   display: grid;
   grid-template-columns: 70% auto;
-  font-family: serif;
-  font-weight: 600;
+  /* font-family: serif; */
+  font-weight: 100;
 }
 
 .score-count-table {
@@ -174,6 +182,7 @@ table, th {
 }
 
 th {
+  font-weight: 100;
   font-size: max(3vh, 2rem);
 }
 
@@ -231,7 +240,7 @@ input[type="number"]:not(:hover)::-webkit-outer-spin-button {
 }
 
 .remove-team {
-  height: max(3.5vh, 1em);
+  height: max(2.5vh, 1em);
   justify-self: center;
 }
 

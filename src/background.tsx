@@ -13,6 +13,7 @@ export function BackgroundComponent() {
         <div class="side-line"></div>
         <div class="side-line"></div>
         <div class="side-bar"></div>
+        <img class="logo-lion" src="/logo.png"></img>
     </div>
     );
 }

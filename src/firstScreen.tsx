@@ -198,7 +198,7 @@ function GameScreen() {
     let nothingness = currentGameData.teams.length;
     // Gotta love solid-js
     nothingness = nothingness;
-    document.documentElement.style.setProperty("--table-text-size", (6 - 0.4 * currentGameData.teams.length).toString() + "vh");
+    document.documentElement.style.setProperty("--table-text-size", (7 - 0.4 * currentGameData.teams.length).toString() + "vh");
   })
 
   return (
