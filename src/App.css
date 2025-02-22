@@ -255,3 +255,10 @@ input[type="number"]:not(:hover)::-webkit-outer-spin-button {
   flex-direction: row;
   font-size: max(3vh, 1rem);
 }
+
+.game-large-index {
+  height: calc(100vh - 20vh - 2vw);
+  font-size: 25vh;
+  padding-top: 20vh;
+  box-sizing: border-box;
+}

@@ -145,7 +145,9 @@ function FullScreenButton() {
 function GameIndexScreen() {
   return (
     <div class="foreground-container">
-      GAME {currentGameData.currentGame + 1}
+      <div class="game-large-index">
+        GAME {currentGameData.currentGame + 1}
+      </div>
     </div>
   );
 }
