@@ -7,6 +7,8 @@ import { HeaderComponent } from "./header";
 import { BackgroundComponent } from "./background";
 import "./App.css";
 
+const totalRounds = 5;
+
 interface RoundScore {
   winChange: number,
   minChange: number
@@ -19,8 +21,8 @@ interface Team {
 
 interface GameData {
   teams: Team[],
+  currentScreen: number,
   currentGame: number,
-  shownGame: number,
   totalRounds: number
 };
 
@@ -28,17 +30,17 @@ const fileName = "basekeez-scores";
 let [gameLoaded, setGameLoaded] = createSignal(false);
 let [currentGameData, setCurrentGameData] = createStore<GameData>({
   teams: [],
+  currentScreen: 0,
   currentGame: 0,
-  shownGame: 0,
-  totalRounds: 1
+  totalRounds: totalRounds
 });
 
 const NewGame = () => {
   setCurrentGameData({
     teams: [],
+    currentScreen: 0,
     currentGame: 0,
-    shownGame: -1,
-    totalRounds: 1
+    totalRounds: totalRounds
   });
   setGameLoaded(true);
   UpdateScoreBoard();
@@ -59,12 +61,12 @@ const UpdateScoreBoard = async () => {
   invoke("update_score", { fileName: fileName });
 }
 
-const ChangeCurrentGameIndex = (newIndex: number) => {
-  setCurrentGameData("currentGame", newIndex);
+const ChangeCurrentGameScreen = (newScreen: number) => {
+  setCurrentGameData("currentScreen", newScreen);
 }
 
-const ChangeShownGameIndex = (newIndex: number) => {
-  setCurrentGameData("shownGame", newIndex);
+const ChangeCurrentGameIndex = (newIndex: number) => {
+  setCurrentGameData("currentGame", newIndex);
 }
 
 const AddTeam = (teamName: string) => {
@@ -135,7 +137,7 @@ function TeamStats(teamIndex: Accessor<number>) {
       <td>{team.name}</td>
       <td>
         <div class="table-input">
-          Totaal: {totalWin()}, Ronde: <input class="number-input" value={teamScore().winChange} min={0} type="number" onChange={(e) => {
+          Ronde: <input class="number-input" value={teamScore().winChange} min={0} type="number" onChange={(e) => {
             if (e.currentTarget.value == "") {
               e.currentTarget.value = "0";
             }
@@ -147,7 +149,7 @@ function TeamStats(teamIndex: Accessor<number>) {
       </td>
       <td>
         <div class="table-input">
-        Totaal: {totalMin()}, Ronde: <input class="number-input" value={teamScore().minChange} min={0} type="number" onChange={(e) => {
+        Ronde: <input class="number-input" value={teamScore().minChange} min={0} type="number" onChange={(e) => {
           if (e.currentTarget.value == "") {
             e.currentTarget.value = "0";
           }
@@ -171,28 +173,34 @@ function TeamStats(teamIndex: Accessor<number>) {
 
 function GameScreen() {
   let [newTeamName, setNewTeamName] = createSignal("");
-  let [showPrevRound, setShowPrevRound] = createSignal(true);
   const InvalidTeamName = () => {
     return newTeamName().length <= 0 || currentGameData.teams.find((team) => team.name == newTeamName()) != undefined;
   }
   UpdateScoreBoard();
-  const UpdateShownGame = () => {
-    let shownIndex = currentGameData.currentGame;
-    if (showPrevRound()) {
-      shownIndex -= 1;
-    }
-    ChangeShownGameIndex(shownIndex);
-  };
 
-  const NextGame = () => {
-    let nextIndex = currentGameData.currentGame + 1;
-    if (nextIndex >= currentGameData.totalRounds) {
-      NewRound();
+  const NextScreen = () => {
+    let nextScreen = currentGameData.currentScreen + 1;
+    let nextIndex = currentGameData.currentGame;
+    if (nextScreen > 2 && nextIndex < currentGameData.totalRounds - 1) {
+      nextScreen = 0;
+      nextIndex++;
     }
+    ChangeCurrentGameScreen(nextScreen);
     ChangeCurrentGameIndex(nextIndex);
-    UpdateShownGame();
     UpdateScoreBoard();
-  } 
+  }
+
+  const PrevScreen = () => {
+    let prevScreen = currentGameData.currentScreen - 1;
+    let prevIndex = currentGameData.currentGame;
+    if (prevScreen < 0 && prevIndex > 0) {
+      prevScreen = 2;
+      prevIndex--;
+    }
+    ChangeCurrentGameScreen(prevScreen);
+    ChangeCurrentGameIndex(prevIndex);
+    UpdateScoreBoard();
+  }
 
   createEffect(() => {
     let nothingness = currentGameData.teams.length;
@@ -225,28 +233,12 @@ function GameScreen() {
         </tbody>
       </table>
       <div class="options">
-        <div class="round-choose-options">
-          Laat vorige ronde zien
-          <input type="checkbox" checked={showPrevRound()} onChange={(e) => {
-              setShowPrevRound(e.currentTarget.checked);
-              UpdateShownGame();
-              UpdateScoreBoard();
-            }
-          }></input>
-        </div>
         <div>
-          <img class="image-button" src="icons8-left-50.png" onclick={
-            () => {
-              let prevIndex = currentGameData.currentGame - 1;
-              if (prevIndex >= 0) {
-                ChangeCurrentGameIndex(prevIndex);
-                UpdateShownGame();
-                UpdateScoreBoard();
-              } 
-            }
-          }/>
-          <Show when={currentGameData.currentGame < currentGameData.totalRounds - 1} fallback={<img class="image-button" src="icons8-plus-50.png" onclick={NextGame}/>}>
-            <img class="image-button" src="icons8-right-50.png" onclick={NextGame}/>
+          <Show when={currentGameData.currentGame > 0 || currentGameData.currentScreen > 0}>
+            <img class="image-button" src="icons8-left-50.png" onclick={PrevScreen}/>
+          </Show>
+          <Show when={currentGameData.currentGame < currentGameData.totalRounds - 1 || currentGameData.currentScreen < 2}>
+            <img class="image-button" src="icons8-right-50.png" onclick={NextScreen}/>
           </Show>
         </div>
       </div>
@@ -257,7 +249,7 @@ function GameScreen() {
 function App() {
   return (
     <main class="container">
-      {HeaderComponent(currentGameData.currentGame + 1)}
+      {HeaderComponent(currentGameData.currentGame + 1, true)}
       <BackgroundComponent />
         <Switch>
           <Match when={!gameLoaded()}>
